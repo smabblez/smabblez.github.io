@@ -32,6 +32,7 @@ The live-show differentiator is audience control: Smabblez uses jumpscares, rede
 - Keep the site fully static and dependency-free.
 - Use Twitch's official channel embed for live/offline state and schedule information; do not add fake status or schedule data.
 - Use relative asset and script paths so repository-subpath hosting continues to work.
+- Preserve measurable, privacy-safe referral attribution: public pages use `strict-origin-when-cross-origin`, and tracked outbound links use `rel="noopener"` without `noreferrer`. This exposes only the site origin to destination analytics while preventing new-tab opener access.
 - Do not introduce server routes, server-only rendering, environment secrets, databases, or runtime API credentials.
 - `scripts/serve.mjs` is a local preview tool only.
 
