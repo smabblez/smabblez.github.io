@@ -94,14 +94,25 @@ if (twitchFrame && twitchPlayerHost) {
     if (twitchPlayerStatus) twitchPlayerStatus.firstChild.textContent = `${content.status} `;
   };
 
-  const loadTwitchPlayer = () => {
+  const loadTwitchPlayer = async () => {
     if (twitchPlayerStarted) return;
     twitchPlayerStarted = true;
-    if (!window.Twitch?.Player) {
-      setTwitchPlayerState('fallback');
-      return;
-    }
     try {
+      if (!window.Twitch?.Player) {
+        await new Promise((resolve, reject) => {
+          const sdk = document.createElement('script');
+          const timeout = window.setTimeout(() => {
+            sdk.remove();
+            reject(new Error('Twitch player timed out'));
+          }, 8000);
+          sdk.src = 'https://player.twitch.tv/js/embed/v1.js';
+          sdk.async = true;
+          sdk.onload = () => { window.clearTimeout(timeout); resolve(); };
+          sdk.onerror = () => { window.clearTimeout(timeout); sdk.remove(); reject(new Error('Twitch player unavailable')); };
+          document.head.append(sdk);
+        });
+      }
+      if (!window.Twitch?.Player) throw new Error('Twitch player unavailable');
       twitchStateTimer = window.setTimeout(() => {
         if (twitchPlayerState === 'loading' || twitchPlayerState === 'ready') {
           setTwitchPlayerState('fallback');
