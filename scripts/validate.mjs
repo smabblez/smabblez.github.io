@@ -4,7 +4,7 @@ import { runInNewContext } from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const read = (file) => readFileSync(join(root, file), 'utf8');
+const read = (file) => readFileSync(join(root, file), 'utf8').replace(/\r\n/g, '\n');
 const index = read('index.html');
 const styles = read('styles.css');
 const mediaKit = read('media-kit.html');
@@ -249,7 +249,7 @@ check(!index.includes('${manifest.'), 'Unresolved manifest placeholders are visi
 check((index.match(/data-social="spotify"/g) || []).length >= 3, 'Spotify must be visible in the feature, finale, and footer.');
 check(!/twitch\.tv\/smabbles\b/i.test(index + configSource), 'Legacy Twitch handle found.');
 check(!/tiktok\.com\/@smabbles\b/i.test(index + configSource), 'Legacy TikTok handle found.');
-check(index.includes('data-twitch-player') && index.includes('https://player.twitch.tv/js/embed/v1.js'), 'Official Twitch interactive player is missing.');
+check(index.includes('data-twitch-player') && scriptSource.includes("sdk.src = 'https://player.twitch.tv/js/embed/v1.js'") && !index.includes('src="https://player.twitch.tv/js/embed/v1.js"'), 'Official Twitch SDK must load on demand without blocking homepage controls.');
 check(index.includes('data-twitch-offline') && index.includes('Watch latest broadcast') && index.includes('Best clips'), 'Twitch offline recovery panel is missing.');
 check(index.includes('class="live-player-fallback"') && index.includes('Open Smabblez on Twitch'), 'Twitch player fallback link is missing.');
 check(scriptSource.includes('window.Twitch.Player.ONLINE') && scriptSource.includes('window.Twitch.Player.OFFLINE') && scriptSource.includes("setTwitchPlayerState('loading')") && scriptSource.includes("setTwitchPlayerState('fallback')"), 'Twitch player must expose useful loading, live, offline, and unavailable states.');
@@ -261,7 +261,7 @@ check(index.includes('class="cursor-nose"'), 'Nose cursor is missing.');
 check(index.includes('data-honk') && !index.includes('data-chaos-toggle'), 'Chaos Mode must be merged into the hero nose control.');
 check(index.includes('data-normal-src="assets/emotes/hype.webp"') && index.includes('data-chaos-src="assets/emotes/evil.webp"') && !index.includes('data-honk-label'), 'Hero nose must switch between distinct verified emotes without a floating label.');
 check(scriptSource.includes('chaosCharacter.src = active ? chaosCharacter.dataset.chaosSrc : chaosCharacter.dataset.normalSrc'), 'Hero nose must swap the character emote with Chaos Mode.');
-check(styles.includes('--nose-x: 43.8%;\n  --nose-y: 45.4%;\n  --nose-size: 15%;') && styles.includes('--nose-x: 43.8%;\n  --nose-y: 54.2%;\n  --nose-size: 14.5%;') && index.includes('styles.css?v=20260801a') && !styles.includes('honk-label'), 'Hero nose hit frame and stylesheet cache key must stay aligned with both rendered emotes.');
+check(styles.includes('--nose-x: 43.8%;\n  --nose-y: 45.4%;\n  --nose-size: 15%;') && styles.includes('--nose-x: 43.8%;\n  --nose-y: 54.2%;\n  --nose-size: 14.5%;') && index.includes('styles.css?v=20260908a') && !styles.includes('honk-label'), 'Hero nose hit frame and stylesheet cache key must stay aligned with both rendered emotes.');
 check(!index.includes('data-cue-deck') && !index.includes('data-show-cue') && !scriptSource.includes('cueResponses'), 'Disconnected audience-control demo must not be shipped without a real third-party integration.');
 check(index.includes('class="nav-live-link"') && index.includes('class="nav-live-link" href="https://www.twitch.tv/smabblez" data-social="twitch"'), 'Mobile navigation must include a direct Twitch action.');
 check(index.includes('data-twitch-schedule') && index.includes('data-schedule-list') && styles.includes('assets/site/stream-schedule-showboard.webp'), 'Twitch-synced show board markup or artwork is missing.');
