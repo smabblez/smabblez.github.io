@@ -38,7 +38,7 @@ window.SMABBLEZ_SITE = {
   },
   seo: {
     /* Only these reviewed HTML files are public, indexable pages. */
-    indexablePages: ["about.html", "clips.html", "gta-rp.html", "index.html", "media-kit.html", "music.html"],
+    indexablePages: ["about.html", "clips.html", "community.html", "gta-rp.html", "index.html", "media-kit.html", "music.html"],
     profileImages: [
       "https://smabblez.github.io/assets/emotes/hype.png",
       "https://smabblez.github.io/assets/site/smabblez-profile-4x3.png",

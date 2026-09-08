@@ -856,6 +856,72 @@ body.chaos-on .hero-nose-button::before { border-color: var(--green); box-shadow
 @media (max-width:760px) { .kit-brief { grid-template-columns:1fr; } }
 @media (max-width:760px) { .kit-hero h1 { font-size:clamp(3.7rem,17.2vw,5.4rem); } .kit-portrait { min-height:440px; } .kit-portrait img { width:100%; max-width:100%; } .kit-hero-actions { display:grid; } .kit-hero-actions .button { width:100%; } }
 
+/* First-visit guide and The Clown Tent. Scoped to keep existing pages stable. */
+.first-show { border-block:1px solid var(--line); background:#100d12; }
+.first-show-intro { display:grid; grid-template-columns:1fr 1.6fr; gap:20px 50px; align-items:start; }
+.first-show-intro .kicker { grid-column:1 / -1; }
+.first-show-intro h2 { font-size:clamp(2.5rem,4.7vw,5.2rem); }
+.first-show-intro > p:last-child { max-width:560px; color:var(--muted); font-size:1.05rem; line-height:1.7; }
+.first-show-steps { margin:42px 0 0; padding:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); list-style:none; border-top:1px solid var(--line); }
+.first-show-steps li { display:flex; flex-direction:column; align-items:start; padding:30px 26px; border-right:1px solid var(--line); }
+.first-show-steps li:first-child { padding-left:0; }
+.first-show-steps li:last-child { border:0; }
+.first-show-steps li > span,.tent-number { color:var(--red); font-size:.65rem; font-weight:900; letter-spacing:.1em; }
+.first-show-steps h3 { margin-top:22px; font:1.6rem/1.1 var(--display); }
+.first-show-steps p { margin:15px 0 24px; color:var(--muted); font-size:.94rem; line-height:1.65; }
+.first-show-steps .text-link { margin-top:auto; }
+.community-page { background:var(--ink); color:var(--paper); }
+.community-main { width:min(100% - 48px,1320px); margin:auto; }
+.community-page .music-header nav a:hover,.community-page .music-header [aria-current="page"] { color:var(--red); }
+.tent-hero { display:grid; grid-template-columns:1.15fr .85fr; gap:60px; align-items:center; padding:76px 0; }
+.tent-hero h1 { margin-top:26px; font-size:clamp(3.4rem,5.4vw,6.2rem); line-height:.98; letter-spacing:-.045em; }
+.community-page em { color:var(--red); font-style:normal; }
+.tent-lede { max-width:650px; margin:26px 0; color:var(--muted); font-size:1.08rem; line-height:1.75; }
+.tent-actions { display:flex; flex-wrap:wrap; align-items:center; gap:20px; }
+.tent-note { margin-top:16px; color:var(--muted); font-size:.72rem; }
+.tent-poster { position:relative; min-height:490px; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:28px 20px 18px; background:var(--paper); color:var(--ink); border-radius:20px; transform:rotate(2deg); }
+.tent-poster > span { align-self:start; position:relative; z-index:1; font:clamp(2rem,3.7vw,4rem)/.95 var(--display); }
+.tent-poster img { width:100%; height:auto; max-height:340px; object-fit:contain; }
+.tent-poster small { font-size:.65rem; letter-spacing:.15em; font-weight:900; }
+.tent-reasons,.tent-arrival,.tent-questions { padding:76px 0; border-top:1px solid var(--line); }
+.tent-section-heading h2,.tent-arrival h2,.tent-questions h2,.tent-invitation h2 { margin-top:22px; font-size:clamp(2.6rem,4.5vw,5rem); line-height:1; letter-spacing:-.045em; }
+.tent-card-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:38px; }
+.tent-card-grid article { padding:28px; border:1px solid var(--line); border-radius:16px; display:flex; flex-direction:column; align-items:start; background:#120f15; }
+.tent-card-grid h3 { margin:30px 0 18px; font:clamp(1.5rem,2.4vw,2.3rem)/1.07 var(--display); }
+.tent-card-grid p,.tent-arrival p,.tent-questions p { color:var(--muted); font-size:.98rem; line-height:1.7; }
+.tent-card-grid .text-link { margin-top:auto; padding-top:26px; }
+.tent-arrival,.tent-questions { display:grid; grid-template-columns:1fr 1fr; gap:70px; }
+.tent-arrival > div > p:last-child { margin-top:22px; max-width:440px; }
+.tent-steps { padding:0; margin:0; list-style:none; }
+.tent-steps li { display:grid; grid-template-columns:36px 1fr; gap:18px; padding:22px 0; border-bottom:1px solid var(--line); }
+.tent-steps li:first-child { padding-top:0; }
+.tent-steps li > span { color:var(--red); font:1.2rem var(--display); }
+.tent-steps h3 { margin:0 0 10px; font:1.4rem var(--display); }
+.tent-questions .about-faq { margin:0; }
+.tent-invitation { margin-bottom:65px; padding:42px; border:1px solid rgba(255,38,56,.4); border-radius:18px; background:#231017; }
+.tent-invitation .tent-actions { margin-top:30px; }
+.community-page a:focus-visible,.first-show a:focus-visible { outline:3px solid var(--paper); outline-offset:5px; }
+@media (max-width:1000px) {
+  .tent-hero { gap:30px; }.tent-poster { min-height:420px; }
+  .tent-card-grid article { padding:22px; }.tent-arrival,.tent-questions { gap:35px; }
+}
+@media (max-width:760px) {
+  .first-show-intro,.first-show-steps,.tent-hero,.tent-card-grid,.tent-arrival,.tent-questions { grid-template-columns:1fr; }
+  .first-show-steps li,.first-show-steps li:first-child { padding:26px 0; border-right:0; border-bottom:1px solid var(--line); }
+  .first-show-intro { gap:18px; }.first-show-steps { margin-top:28px; }
+  .first-show-intro h2 { font-size:clamp(2.4rem,10.5vw,4rem); }
+  .community-main { width:calc(100% - 36px); }.tent-hero { padding:48px 0; gap:36px; }
+  .tent-hero h1 { font-size:clamp(2.8rem,12.2vw,4.8rem); }
+  .tent-poster { min-height:360px; transform:none; }.tent-poster img { max-height:260px; }
+  .tent-poster > span { font-size:2.6rem; }.tent-actions { align-items:stretch; flex-direction:column; }
+  .tent-actions .button { width:100%; }.tent-actions > .text-link { align-self:start; }
+  .tent-reasons,.tent-arrival,.tent-questions { padding:48px 0; }
+  .tent-card-grid { gap:12px; margin-top:28px; }.tent-card-grid h3 { margin-top:22px; }
+  .tent-invitation { padding:28px 22px; }.tent-invitation h2 { font-size:clamp(2.1rem,9vw,3rem); }
+  .about-hero > div,.kit-hero > div { min-width:0; }
+  .about-hero h1,.kit-hero h1 { font-size:clamp(3.1rem,14.5vw,5.4rem); }
+}
+
 /* Small conversion and depth upgrades that preserve real destinations. */
 .simple-home main {
   position: relative;

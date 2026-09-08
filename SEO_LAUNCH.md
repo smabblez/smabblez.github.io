@@ -1,6 +1,6 @@
 # Search launch checklist
 
-The site already includes crawlable titles and descriptions, canonical URLs, page-specific structured data, social preview metadata, a stable favicon, `robots.txt`, and a generated `sitemap.xml` covering six public pages.
+The site includes crawlable titles and descriptions, canonical URLs, page-specific structured data, social preview metadata, a stable favicon, `robots.txt`, and a generated `sitemap.xml` covering seven public pages.
 
 ## After the SEO changes are deployed
 
@@ -12,6 +12,7 @@ The site already includes crawlable titles and descriptions, canonical URLs, pag
    - `https://smabblez.github.io/`
    - `https://smabblez.github.io/about.html`
    - `https://smabblez.github.io/clips.html`
+   - `https://smabblez.github.io/community.html`
    - `https://smabblez.github.io/gta-rp.html`
    - `https://smabblez.github.io/media-kit.html`
    - `https://smabblez.github.io/music.html`
