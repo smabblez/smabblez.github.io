@@ -43,7 +43,7 @@
   <link rel="dns-prefetch" href="//p.scdn.co">
   <link rel="dns-prefetch" href="//image-cdn-ak.spotifycdn.com">
   <link rel="dns-prefetch" href="//discord.com">
-  <link rel="stylesheet" href="styles.css?v=20260908b">
+  <link rel="stylesheet" href="styles.css?v=20260923a">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -106,11 +106,7 @@
   <a class="skip-link" href="#main">Skip to the show</a>
   <div class="cursor-nose" aria-hidden="true"></div>
   <div class="scroll-progress" aria-hidden="true"><span></span></div>
-  <div class="chaos-flash" aria-hidden="true">
-    <span data-chaos-kicker>THE TENT IS TILTING</span>
-    <strong data-chaos-title>CHAOS MODE</strong>
-    <small data-chaos-hint>CLICK SOMETHING DUMB</small>
-  </div>
+  <div class="chaos-effects" aria-hidden="true"></div>
   <p class="mode-status sr-only" role="status" aria-live="polite" data-mode-status></p>
 
   <aside class="sound-prompt" data-sound-prompt aria-label="Smabblez soundtrack preview controls">
@@ -147,8 +143,8 @@
       <a href="#live" data-section-name="Live"><span aria-hidden="true">01</span>Live</a>
       <a href="clips.html" data-track="clips-nav"><span aria-hidden="true">↗</span>Clips</a>
       <a href="community.html" data-track="community-nav"><span aria-hidden="true">↗</span>The Clown Tent</a>
-      <a href="#follow" data-section-name="Follow"><span aria-hidden="true">02</span>Follow</a>
-      <a href="#about" data-section-name="About"><span aria-hidden="true">03</span>About</a>
+      <a href="music.html" data-track="music-nav"><span aria-hidden="true">↗</span>Music</a>
+      <a href="about.html" data-track="about-nav"><span aria-hidden="true">↗</span>About me</a>
       <a class="nav-live-link" href="https://www.twitch.tv/smabblez" data-social="twitch" target="_blank" rel="noopener"><span aria-hidden="true">↗</span>Watch me live</a>
     </nav>
     <a class="header-cta" href="https://www.twitch.tv/smabblez" data-social="twitch" target="_blank" rel="noopener"><span class="live-dot" aria-hidden="true"></span>Watch me live</a>
@@ -165,6 +161,13 @@
           <a class="hero-secondary text-link" href="clips.html" data-track="hero-clips">Catch the highlights <span aria-hidden="true">↗</span></a>
         </div>
         <ul class="hero-show-notes" aria-label="What to expect"><li>GTA RP</li><li>Chat-triggered scares</li><li>You call the shots</li></ul>
+        <div class="chaos-console" data-chaos-console hidden role="region" aria-label="Chaos Mode playground">
+          <div class="chaos-console-top"><span>Chaos Mode / You're in charge</span><button type="button" data-chaos-off>End chaos <span aria-hidden="true">×</span></button></div>
+          <p class="chaos-reaction" data-chaos-reaction>The big red nose was a warning.</p>
+          <p class="chaos-caption" data-chaos-caption>Six bits of trouble. One big finale. Take your time.</p>
+          <div class="chaos-meter-row"><progress data-chaos-meter max="6" value="0" aria-label="Trouble until the finale"></progress><span data-chaos-count>0 / 6</span></div>
+          <div class="chaos-console-bottom"><button type="button" data-chaos-play>Cause trouble <span aria-hidden="true">✳</span></button><span data-chaos-hint>Or tap an empty spot.</span></div>
+        </div>
       </div>
       <div class="hero-stage">
         <div class="spotlight" aria-hidden="true"></div>
@@ -328,6 +331,6 @@
   </footer>
 
   <script src="site.config.js?v=20260908b"></script>
-  <script src="script.js?v=20260908a"></script>
+  <script src="script.js?v=20260923a"></script>
 </body>
 </html>

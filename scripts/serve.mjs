@@ -21,7 +21,14 @@ const types = {
 };
 
 createServer((request, response) => {
-  const pathname = decodeURIComponent(new URL(request.url, `http://${host}`).pathname);
+  let pathname;
+  try {
+    pathname = decodeURIComponent(new URL(request.url, `http://${host}`).pathname);
+  } catch {
+    response.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Invalid URL');
+    return;
+  }
   const requested = normalize(pathname).replace(/^(\.\.[/\\])+/, '').replace(/^[/\\]+/, '').replaceAll('\\', '/');
   const projectPrefix = 'smabblez-all-in-one';
   const relative = requested === projectPrefix
@@ -33,6 +40,12 @@ createServer((request, response) => {
   if (existsSync(target) && statSync(target).isDirectory()) target = join(target, 'index.html');
 
   if (!target.startsWith(root) || !existsSync(target) || !statSync(target).isFile()) {
+    const recovery = join(root, '404.html');
+    if (request.headers.accept?.includes('text/html') && existsSync(recovery)) {
+      response.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      createReadStream(recovery).pipe(response);
+      return;
+    }
     response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     response.end('Not found');
     return;

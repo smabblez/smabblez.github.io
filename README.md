@@ -14,6 +14,7 @@ Validate after changes:
 
 ```powershell
 node scripts/validate.mjs
+node scripts/test-schedule.mjs
 node --check script.js
 node scripts/generate-sitemap.mjs --check
 node scripts/build-site.mjs _site
@@ -39,6 +40,10 @@ Do not add a backend, server-only rendering, environment secrets, or root-relati
 
 ## Editing order
 
+The seven public pages form the main Smabblez site. Secondary-page headers share the same destinations, including The Clown Tent and Work with me. Keep those links available without JavaScript and identify the current page with `aria-current="page"`.
+
+`404.html` is a self-contained, noindex recovery page copied into the Pages artifact but excluded from the sitemap. Its canonical absolute destinations work even from a missing nested URL. The preview server returns it with HTTP 404 for HTML requests; missing assets remain plain 404 responses, and malformed URL encoding returns 400 without stopping the server.
+
 1. Edit `site.config.js` for public platform URLs, Discord preview data, and the optional analytics endpoint.
 2. Edit `index.html` for page copy or section structure.
 3. Edit `styles.css` for layout and visual design.
@@ -55,6 +60,8 @@ For Hermes/E4B from this directory, begin with `AGENTS.md`, then `site.config.js
 - YouTube: `https://www.youtube.com/@Smabblez`
 
 ## Conversion analytics
+
+Schedule snapshots older than 24 hours are not projected into new upcoming shows. If refresh fails or the snapshot is invalid, the homepage links to the official Twitch schedule instead. Fresh boards show the actual last-checked time. The deployment may retain the previous snapshot during a Twitch outage, but the browser freshness check still applies.
 
 Tracked calls to action on the homepage and secondary public pages emit a browser event named `smabblez:conversion`. To collect those events, set `analytics.endpoint` in `site.config.js` to a POST endpoint you control. The payload contains the event label, destination origin/path, page path, timestamp, an allowlisted UTM attribution object, and the referring page's origin only. It does not set cookies, use local storage, capture a full referrer URL, or create a user identifier. With no endpoint configured, nothing is transmitted.
 

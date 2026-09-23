@@ -176,6 +176,12 @@ const scheduleDayCode = (shortDay) => Object.entries(scheduleDayLabels)
   .find(([, label]) => label.startsWith(String(shortDay || '').toUpperCase().slice(0, 2)))?.[0];
 
 const renderSchedule = (payload) => {
+  // Deploy refreshes can fail. Never turn an old weekly snapshot into new promises.
+  const fetchedAt = Date.parse(payload?.fetchedAt);
+  const age = Date.now() - fetchedAt;
+  if (!Number.isFinite(age) || age < -300000 || age > 86400000) {
+    throw new Error('The schedule snapshot is no longer current.');
+  }
   const events = Array.isArray(payload?.events) ? payload.events : [];
   if (!scheduleList || !events.length) throw new Error('No scheduled streams are available.');
   const timeZone = payload.timezone || siteConfig.schedule?.timezone || 'America/Chicago';
@@ -228,8 +234,8 @@ const renderSchedule = (payload) => {
     fragment.append(card);
   });
   scheduleList.replaceChildren(fragment);
-  const refreshHours = payload.refreshHours || siteConfig.schedule?.refreshHours || 6;
-  scheduleStatus.textContent = `This board follows the schedule I keep on Twitch and refreshes every ${refreshHours} hours.`;
+  const checked = new Intl.DateTimeFormat('en-US', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(new Date(fetchedAt));
+  scheduleStatus.textContent = `Last checked on Twitch: ${checked}. Check the official schedule for changes.`;
   scheduleRoot.dataset.scheduleState = 'ready';
 };
 
@@ -242,7 +248,11 @@ const loadSchedule = async () => {
     renderSchedule(await response.json());
   } catch {
     scheduleRoot.dataset.scheduleState = 'fallback';
-    scheduleStatus.textContent = 'The board missed its cue. My official Twitch schedule is still available below.';
+    const fallback = document.createElement('li');
+    fallback.className = 'schedule-fallback';
+    fallback.textContent = 'Current stream times are on Twitch. Check the official schedule before planning your next visit.';
+    scheduleList.replaceChildren(fallback);
+    scheduleStatus.textContent = 'I couldn’t confirm the latest times here. My official Twitch schedule is available below.';
   }
 };
 
@@ -539,121 +549,196 @@ window.addEventListener('keydown', (event) => {
   }
 });
 
-const chaosFlash = document.querySelector('.chaos-flash');
+const chaosEffects = document.querySelector('.chaos-effects');
 const modeStatus = document.querySelector('[data-mode-status]');
 const chaosCharacter = document.querySelector('[data-chaos-character]');
 const chaosSupportArt = [...document.querySelectorAll('[data-chaos-support]')];
 const heroCharacter = document.querySelector('.hero-character');
 const honkButton = document.querySelector('[data-honk]');
-const chaosKicker = document.querySelector('[data-chaos-kicker]');
-const chaosTitle = document.querySelector('[data-chaos-title]');
+const chaosConsole = document.querySelector('[data-chaos-console]');
+const chaosPlay = document.querySelector('[data-chaos-play]');
+const chaosOff = document.querySelector('[data-chaos-off]');
+const chaosReaction = document.querySelector('[data-chaos-reaction]');
+const chaosCaption = document.querySelector('[data-chaos-caption]');
+const chaosMeter = document.querySelector('[data-chaos-meter]');
+const chaosCount = document.querySelector('[data-chaos-count]');
 const chaosHint = document.querySelector('[data-chaos-hint]');
+const chaosMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const sparkColors = ['#ff2638', '#ffd42f', '#f6f1e7'];
-const chaosWords = ['HONK!', 'BONK!', 'NO BRAKES', 'CHAT DID IT', 'GTA MOMENT', 'WHOOPS'];
-const chaosHints = ['CLICK SOMETHING DUMB', 'THE PLAN IS GONE', 'CHAT HAS THE WHEEL', 'THIS SEEMED FUNNY', 'NO REFUNDS'];
+const chaosBits = [
+  { word: 'HONK!', title: 'A very serious clown meeting.', caption: 'The agenda is honk. The minutes are also honk.', shape: 'ring' },
+  { word: 'PLOT TWIST!', title: 'The getaway car is a unicycle.', caption: 'Good news: parking just got easier.', shape: 'confetti' },
+  { word: 'CHAT DID IT', title: 'Chat has the wheel.', caption: 'I would buckle up. Twice, if possible.', shape: 'star' },
+  { word: 'BIG ENTRANCE', title: 'You ordered a dramatic entrance.', caption: 'The door was open. We used the confetti cannon.', shape: 'confetti' },
+  { word: 'BONK!', title: 'The plot has left the building.', caption: 'We gave it a tiny hat and wished it luck.', shape: 'star' }
+];
 let chaosClicks = 0;
+let chaosRounds = 0;
+let chaosDeck = [];
+let lastChaosAt = -Infinity;
+let honkTimer = 0;
+const chaosCleanup = new Map();
 
-const makeSparks = (x, y, amount = 24) => {
-  if (reduceMotion) return;
+const clearChaosEffects = () => {
+  chaosCleanup.forEach((timer, element) => { window.clearTimeout(timer); element.remove(); });
+  chaosCleanup.clear();
+  window.clearTimeout(honkTimer);
+  heroCharacter?.classList.remove('honked');
+};
+
+const addChaosEffect = (element) => {
+  // Bound work even when visitors click quickly or background animations are paused.
+  if (chaosCleanup.size >= 80) return;
+  element.setAttribute('aria-hidden', 'true');
+  const remove = () => {
+    window.clearTimeout(chaosCleanup.get(element));
+    chaosCleanup.delete(element);
+    element.remove();
+  };
+  chaosEffects.appendChild(element);
+  chaosCleanup.set(element, window.setTimeout(remove, 1800));
+  element.addEventListener('animationend', remove, { once: true });
+};
+
+const makeSparks = (x, y, amount = 18, shape = 'confetti') => {
+  if (chaosMotion.matches) return;
   for (let index = 0; index < amount; index += 1) {
     const spark = document.createElement('i');
     const angle = (Math.PI * 2 * index) / amount;
-    const distance = 60 + Math.random() * 140;
-    spark.className = 'spark';
+    const distance = 40 + Math.random() * 110;
+    spark.className = `spark chaos-particle chaos-particle-${shape}`;
     spark.style.left = `${x}px`;
     spark.style.top = `${y}px`;
     spark.style.setProperty('--spark-x', `${Math.cos(angle) * distance}px`);
     spark.style.setProperty('--spark-y', `${Math.sin(angle) * distance}px`);
     spark.style.setProperty('--spark-color', sparkColors[index % sparkColors.length]);
-    body.appendChild(spark);
-    spark.addEventListener('animationend', () => spark.remove());
+    addChaosEffect(spark);
   }
 };
 
-const dropChaosSticker = (x, y, word = chaosWords[Math.floor(Math.random() * chaosWords.length)]) => {
-  if (reduceMotion) return;
+const dropChaosSticker = (x, y, word) => {
+  if (chaosMotion.matches) return;
   const sticker = document.createElement('span');
   sticker.className = 'chaos-sticker';
   sticker.textContent = word;
-  sticker.style.left = `${x}px`;
-  sticker.style.top = `${y}px`;
+  const edge = Math.min(150, window.innerWidth / 2);
+  sticker.style.left = `${Math.max(edge, Math.min(window.innerWidth - edge, x))}px`;
+  sticker.style.top = `${Math.max(80, Math.min(window.innerHeight - 70, y))}px`;
   sticker.style.setProperty('--sticker-color', sparkColors[Math.floor(Math.random() * (sparkColors.length - 1))]);
   sticker.style.setProperty('--sticker-rotate', `${-14 + Math.random() * 28}deg`);
-  body.appendChild(sticker);
-  sticker.addEventListener('animationend', () => sticker.remove());
+  addChaosEffect(sticker);
 };
 
-const broadcastChaos = () => {
-  const word = chaosWords[Math.floor(Math.random() * chaosWords.length)];
-  if (chaosKicker) chaosKicker.textContent = 'THE TENT IS TILTING';
-  if (chaosTitle) chaosTitle.textContent = word;
-  if (chaosHint) chaosHint.textContent = chaosHints[Math.floor(Math.random() * chaosHints.length)];
-  chaosFlash.classList.remove('play');
-  void chaosFlash.offsetWidth;
-  chaosFlash.classList.add('play');
-  window.setTimeout(() => chaosFlash.classList.remove('play'), 700);
-  [[.2,.24],[.8,.22],[.24,.74],[.76,.7]].forEach(([x, y], index) => {
-    window.setTimeout(() => {
-      makeSparks(window.innerWidth * x, window.innerHeight * y, 8);
-      dropChaosSticker(window.innerWidth * x, window.innerHeight * y, chaosWords[index]);
-    }, index * 65);
-  });
+const shuffleChaos = () => {
+  chaosDeck = [...chaosBits];
+  for (let index = chaosDeck.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(Math.random() * (index + 1));
+    [chaosDeck[index], chaosDeck[swap]] = [chaosDeck[swap], chaosDeck[index]];
+  }
 };
 
-const honkNose = () => {
-  if (!honkButton) return;
-  const rect = honkButton.getBoundingClientRect();
-  const x = rect.left + rect.width / 2;
-  const y = rect.top + rect.height / 2;
-  makeSparks(x, y, 18);
-  dropChaosSticker(x, y, 'HONK!');
+const bounceClown = () => {
+  if (chaosMotion.matches) return;
+  window.clearTimeout(honkTimer);
   heroCharacter?.classList.remove('honked');
   void heroCharacter?.offsetWidth;
   heroCharacter?.classList.add('honked');
-  window.setTimeout(() => heroCharacter?.classList.remove('honked'), 460);
-  modeStatus.textContent = 'Honk! You found Smabblez\'s nose.';
+  honkTimer = window.setTimeout(() => heroCharacter?.classList.remove('honked'), 460);
+};
+
+const causeTrouble = (x, y, showSticker = true) => {
+  if (!body.classList.contains('chaos-on')) return;
+  const animateReaction = performance.now() - lastChaosAt >= 120;
+  lastChaosAt = performance.now();
+  if (chaosClicks === 6) {
+    chaosClicks = 0;
+    shuffleChaos();
+  }
+  chaosClicks += 1;
+  const finale = chaosClicks === 6;
+  const bit = finale ? {
+    word: 'ENCORE!',
+    title: chaosRounds % 2 ? 'The tent has achieved liftoff.' : 'You brought the whole tent down.',
+    caption: 'Six excellent decisions. Absolutely no adult supervision.',
+    shape: 'star'
+  } : chaosDeck[chaosClicks - 1];
+  if (finale) chaosRounds += 1;
+  chaosReaction.textContent = bit.title;
+  chaosCaption.textContent = bit.caption;
+  chaosMeter.value = chaosClicks;
+  chaosCount.textContent = `${chaosClicks} / 6`;
+  chaosPlay.innerHTML = finale ? 'Go again <span aria-hidden="true">↻</span>' : 'Cause trouble <span aria-hidden="true">✳</span>';
+  chaosHint.textContent = finale ? 'Encore? You know you want to.' : 'Or tap an empty spot.';
+  chaosConsole.classList.toggle('is-finale', finale);
+  modeStatus.textContent = `${bit.title} ${finale ? 'Finale! Go again for another round.' : `${chaosClicks} of 6 until the finale.`}`;
+  if (finale) {
+    clearChaosEffects();
+    makeSparks(window.innerWidth * .18, window.innerHeight * .5, 18, 'confetti');
+    makeSparks(window.innerWidth * .82, window.innerHeight * .5, 18, 'confetti');
+  }
+  if (animateReaction || finale) {
+    makeSparks(x, y, finale ? 28 : 12, bit.shape);
+    if (showSticker) dropChaosSticker(x, y - 40, bit.word);
+    bounceClown();
+  }
 };
 
 honkButton?.addEventListener('click', (event) => {
   event.stopPropagation();
   const active = !body.classList.contains('chaos-on');
-  honkNose();
   setChaos(active);
+  if (active) {
+    const rect = honkButton.getBoundingClientRect();
+    makeSparks(rect.left + rect.width / 2, rect.top + rect.height / 2, 18, 'ring');
+    dropChaosSticker(rect.left + rect.width / 2, rect.top, 'HONK!');
+    bounceClown();
+    chaosPlay.focus();
+  }
 });
 
 const setChaos = (active) => {
+  const returnFocus = !active && chaosConsole.contains(document.activeElement);
+  clearChaosEffects();
   body.classList.toggle('chaos-on', active);
   honkButton?.setAttribute('aria-pressed', String(active));
   honkButton?.setAttribute('aria-label', active ? "Honk Smabblez's nose to turn off Chaos Mode" : "Honk Smabblez's nose to turn on Chaos Mode");
-  modeStatus.textContent = active ? 'Chaos mode enabled. Click the page to drop chaos.' : 'Chaos mode disabled.';
+  modeStatus.textContent = active ? 'Chaos Mode enabled. Cause six bits of trouble for a finale. Use the Cause trouble button or click an empty spot. Escape ends chaos.' : 'Chaos Mode ended. The tent is back in order.';
   chaosCharacter.src = active ? chaosCharacter.dataset.chaosSrc : chaosCharacter.dataset.normalSrc;
   chaosSupportArt.forEach((image) => {
     image.src = active ? image.dataset.chaosSrc : image.dataset.normalSrc;
   });
   chaosClicks = 0;
-  if (active) broadcastChaos();
-  else {
-    if (chaosKicker) chaosKicker.textContent = 'THE TENT IS QUIET';
-    if (chaosTitle) chaosTitle.textContent = 'CHAOS MODE';
-    if (chaosHint) chaosHint.textContent = 'HONK TO BRING IT BACK';
-  }
+  chaosRounds = 0;
+  lastChaosAt = -Infinity;
+  chaosConsole.hidden = !active;
+  chaosConsole.classList.remove('is-finale');
+  chaosReaction.textContent = 'The big red nose was a warning.';
+  chaosCaption.textContent = 'Six bits of trouble. One big finale. Take your time.';
+  chaosMeter.value = 0;
+  chaosCount.textContent = '0 / 6';
+  chaosPlay.innerHTML = 'Cause trouble <span aria-hidden="true">✳</span>';
+  chaosHint.textContent = 'Or tap an empty spot.';
+  if (active) shuffleChaos();
+  if (returnFocus) honkButton.focus({ preventScroll: true });
 };
+
+chaosPlay?.addEventListener('click', () => {
+  const rect = chaosPlay.getBoundingClientRect();
+  // The card already carries the joke; keep word stickers off its reading area.
+  causeTrouble(rect.left + rect.width / 2, rect.top, false);
+});
+chaosOff?.addEventListener('click', () => setChaos(false));
+chaosMotion.addEventListener('change', clearChaosEffects);
+document.addEventListener('visibilitychange', () => { if (document.hidden) clearChaosEffects(); });
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && body.classList.contains('chaos-on')) setChaos(false);
 });
 
 document.addEventListener('click', (event) => {
-  if (!body.classList.contains('chaos-on') || event.target.closest('a,button,input,label')) return;
-  chaosClicks += 1;
-  const word = chaosWords[chaosClicks % chaosWords.length];
-  makeSparks(event.clientX, event.clientY, 12);
-  dropChaosSticker(event.clientX, event.clientY, word);
-  heroCharacter?.classList.remove('honked');
-  void heroCharacter?.offsetWidth;
-  heroCharacter?.classList.add('honked');
-  window.setTimeout(() => heroCharacter?.classList.remove('honked'), 460);
-  modeStatus.textContent = `Chaos click ${chaosClicks}: ${word}`;
+  if (!body.classList.contains('chaos-on') || event.defaultPrevented || event.target.closest('a,button,input,label,summary,select,textarea,audio,video,iframe,[role],[tabindex],[contenteditable]:not([contenteditable="false"])')) return;
+  if (!window.getSelection()?.isCollapsed) return;
+  causeTrouble(event.clientX, event.clientY);
 });
 
 if (!reduceMotion && window.matchMedia('(pointer:fine)').matches) {
