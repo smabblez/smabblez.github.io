@@ -22,8 +22,8 @@ Objective: develop this website as Smabblez's main creator site, prioritizing Tw
 
 ## Remaining before the main-site goal is complete
 
-1. Confirm the online Twitch state when available or with a controlled fixture; this pass observed the actual offline state only. Other reviewed flows are listed above.
+1. Controlled Twitch verification is complete: `scripts/test-twitch.mjs` exercises the shipped integration with a fixture SDK, covering deferred startup, muted/no-autoplay options, ready/online/offline/play transitions, late events, response timeout, SDK errors, and recovery. These tests run in CI; they do not claim an actual live broadcast was observed.
 2. Complete remote release review and CI for the combined readability, Chaos, navigation, recovery, and stale-schedule fixes. Local validation and commit preparation are complete; use Git history for the authoritative commit identity.
 3. Publish the reviewed candidate through the canonical repository with release authorization, then verify the default-branch commit, successful Pages run, live asset versions, navigation, and nested 404 response.
 
-Status: development remains active. The release candidate is unpublished. Earlier approval for PR #2 does not describe this later candidate. GitHub CLI currently reports invalid authentication; Git transport must be checked separately. No Hermes runtime was started.
+Status: development remains active. The release candidate is unpublished. Earlier approval for PR #2 does not describe this later candidate. Git transport successfully pushed `codex/main-creator-site`; GitHub CLI authentication is invalid, the PR connector returned 403, and the browser review form still requires sign-in. No Hermes runtime was started.

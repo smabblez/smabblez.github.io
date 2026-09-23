@@ -15,6 +15,7 @@ Validate after changes:
 ```powershell
 node scripts/validate.mjs
 node scripts/test-schedule.mjs
+node scripts/test-twitch.mjs
 node --check script.js
 node scripts/generate-sitemap.mjs --check
 node scripts/build-site.mjs _site

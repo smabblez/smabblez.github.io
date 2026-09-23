@@ -31,6 +31,7 @@ jobs:
         run: |
           node scripts/validate.mjs
           node scripts/test-schedule.mjs
+          node scripts/test-twitch.mjs
           node --check script.js
           node --check analytics.js
           node --check media-kit.js
