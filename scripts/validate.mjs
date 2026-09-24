@@ -30,6 +30,14 @@ const check = (condition, message) => { if (!condition) failures.push(message); 
 const indexablePages = config?.seo?.indexablePages || [];
 const siteUrl = String(config?.siteUrl || '').replace(/\/$/, '');
 const contentHubs = indexablePages.filter((page) => page !== 'index.html');
+const recoveryPage = read('404.html');
+check(!indexablePages.includes('404.html') && !read('sitemap.xml').includes('/404.html'), 'The recovery page must stay out of the search index inventory.');
+check(recoveryPage.includes('name="robots" content="noindex, follow"') && buildSource.includes("'404.html'"), 'The noindex recovery page must ship in the Pages artifact.');
+check(recoveryPage.includes(`href="${siteUrl}/"`) && recoveryPage.includes(`href="${siteUrl}/community.html"`), 'Recovery links must resolve to the canonical site even from nested missing URLs.');
+for (const page of contentHubs) {
+  const header = read(page).match(/<header\b[^>]*>([\s\S]*?)<\/header>/i)?.[1] || '';
+  check(contentHubs.every((destination) => header.includes(`href="${destination}"`)), `${page}: primary navigation must connect every content hub.`);
+}
 const pageMetadata = indexablePages.map((page) => {
   const html = read(page);
   const jsonLdBlocks = [...html.matchAll(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/gi)].map((match) => match[1].trim());
@@ -205,7 +213,7 @@ check(index.includes('name="twitter:image"') && index.includes('property="og:ima
 check(mediaKit.includes('<link rel="canonical" href="https://smabblez.github.io/media-kit.html">'), 'Media-kit canonical URL is missing.');
 check(mediaKit.includes('class="kit-brief"') && (mediaKit.match(/class="kit-brief"/g) || []).length === 1, 'Media-kit collaboration brief checklist is missing.');
 check(mediaKit.includes('data-print-kit') && mediaKit.includes('src="media-kit.js?v=20260723b"') && !mediaKit.includes('onclick="window.print()"'), 'Media-kit print control must use the dedicated accessible script.');
-check(mediaKit.includes('styles.css?v=20260908b') && mediaKit.includes('src="assets/emotes/hype.webp" width="1024" height="1044"') && styles.includes('.kit-portrait { min-width:0; width:100%; }') && styles.includes('.kit-portrait img { width:min(110%,680px); height:auto; max-height:680px; object-fit:contain; object-position:center bottom; }') && styles.includes('.kit-portrait img { width:100%; max-width:100%; }'), 'Media-kit portrait must preserve the source-art aspect ratio, stay inside the mobile grid, and ship with a fresh stylesheet cache key.');
+check(mediaKit.includes('styles.css?v=20260923a') && mediaKit.includes('src="assets/emotes/hype.webp" width="1024" height="1044"') && styles.includes('.kit-portrait { min-width:0; width:100%; }') && styles.includes('.kit-portrait img { width:min(110%,680px); height:auto; max-height:680px; object-fit:contain; object-position:center bottom; }') && styles.includes('.kit-portrait img { width:100%; max-width:100%; }'), 'Media-kit portrait must preserve the source-art aspect ratio, stay inside the mobile grid, and ship with a fresh stylesheet cache key.');
 check(mediaKit.includes('data-copy-kit') && mediaKit.includes('id="kit-copy-status"') && mediaKit.includes('aria-live="polite"'), 'Media-kit must expose an accessible copy-link handoff status.');
 check(mediaKitSource.includes('navigator.clipboard') && mediaKitSource.includes("execCommand('copy')") && mediaKitSource.includes('data-copy-kit'), 'Media-kit copy-link control must include Clipboard API and legacy fallback behavior.');
 check(mediaKit.includes('href="#kit-contact"') && mediaKit.includes('id="kit-contact"'), 'Media-kit must expose an above-the-fold path to collaboration contact.');
@@ -261,7 +269,7 @@ check(index.includes('class="cursor-nose"'), 'Nose cursor is missing.');
 check(index.includes('data-honk') && !index.includes('data-chaos-toggle'), 'Chaos Mode must be merged into the hero nose control.');
 check(index.includes('data-normal-src="assets/emotes/hype.webp"') && index.includes('data-chaos-src="assets/emotes/evil.webp"') && !index.includes('data-honk-label'), 'Hero nose must switch between distinct verified emotes without a floating label.');
 check(scriptSource.includes('chaosCharacter.src = active ? chaosCharacter.dataset.chaosSrc : chaosCharacter.dataset.normalSrc'), 'Hero nose must swap the character emote with Chaos Mode.');
-check(styles.includes('--nose-x: 43.8%;\n  --nose-y: 45.4%;\n  --nose-size: 15%;') && styles.includes('--nose-x: 43.8%;\n  --nose-y: 54.2%;\n  --nose-size: 14.5%;') && index.includes('styles.css?v=20260908b') && !styles.includes('honk-label'), 'Hero nose hit frame and stylesheet cache key must stay aligned with both rendered emotes.');
+check(styles.includes('--nose-x: 43.8%;\n  --nose-y: 45.4%;\n  --nose-size: 15%;') && styles.includes('--nose-x: 43.8%;\n  --nose-y: 54.2%;\n  --nose-size: 14.5%;') && index.includes('styles.css?v=20260923a') && !styles.includes('honk-label'), 'Hero nose hit frame and stylesheet cache key must stay aligned with both rendered emotes.');
 check(!index.includes('data-cue-deck') && !index.includes('data-show-cue') && !scriptSource.includes('cueResponses'), 'Disconnected audience-control demo must not be shipped without a real third-party integration.');
 check(index.includes('class="nav-live-link"') && index.includes('class="nav-live-link" href="https://www.twitch.tv/smabblez" data-social="twitch"'), 'Mobile navigation must include a direct Twitch action.');
 check(index.includes('data-twitch-schedule') && index.includes('data-schedule-list') && styles.includes('assets/site/stream-schedule-showboard.webp'), 'Twitch-synced show board markup or artwork is missing.');

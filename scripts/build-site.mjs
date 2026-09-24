@@ -17,6 +17,7 @@ if (!relativeOutput || relativeOutput.startsWith('..') || isAbsolute(relativeOut
 
 const files = [
   ...pages,
+  '404.html',
   'analytics.js',
   'media-kit.js',
   'robots.txt',
